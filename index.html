@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#17365d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="محل النور">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>إدارة محل النور</title>
+<style>
+:root{--navy:#17365d;--blue:#1f4e78;--bg:#f3f6fa;--white:#fff;--green:#16834a;--red:#c0392b;--muted:#667085}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,Arial,sans-serif;color:#17212f}
+header{background:linear-gradient(135deg,#17365d,#24608c);color:white;padding:22px 16px 18px;border-radius:0 0 22px 22px}
+header h1{font-size:22px;margin:0 0 6px}header p{margin:0;font-size:13px;opacity:.9}
+main{max-width:760px;margin:auto;padding:14px 12px 92px}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e4e7ec;display:flex;justify-content:space-around;padding:8px 4px calc(8px + env(safe-area-inset-bottom));z-index:5}
+nav button{border:0;background:none;color:#667085;font-size:11px;padding:5px 2px;flex:1}
+nav button.active{color:var(--blue);font-weight:700}
+nav span{display:block;font-size:20px;margin-bottom:2px}
+.page{display:none}.page.active{display:block}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.card,.panel{background:#fff;border-radius:15px;padding:14px;box-shadow:0 2px 10px #17212f0b}
+.card small{color:var(--muted);font-size:12px}.card strong{display:block;font-size:21px;margin-top:7px;color:var(--navy);overflow-wrap:anywhere}
+h2{font-size:18px;margin:16px 2px 10px}.panel{margin:10px 0}
+label{display:block;font-size:13px;font-weight:650;margin:10px 0 5px}
+input,select,textarea{width:100%;padding:12px;border:1px solid #d0d5dd;border-radius:10px;background:#fff;font-size:16px;min-height:44px}
+button.primary{background:var(--blue);color:#fff;border:0;border-radius:11px;padding:13px 16px;font-size:15px;font-weight:700;width:100%;margin-top:14px}
+button.secondary{background:#eaf1f8;color:var(--blue);border:0;border-radius:10px;padding:10px 12px;font-weight:700}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.list-item{padding:11px 0;border-bottom:1px solid #eef0f3;font-size:14px;display:flex;justify-content:space-between;gap:10px}
+.list-item:last-child{border:0}.muted{color:var(--muted);font-size:12px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.empty{color:var(--muted);text-align:center;padding:18px 8px;font-size:13px}
+.danger{color:var(--red);background:#fff0ee}
+.notice{background:#fff8e7;border:1px solid #f3d48a;padding:11px;border-radius:11px;font-size:12px;line-height:1.7}
+</style>
+</head>
+<body>
+<header><h1>محل النور</h1><p>برنامج إدارة المبيعات والمخزون والحسابات</p></header>
+<main>
+<section id="dashboard" class="page active">
+<h2>ملخص الشغل</h2>
+<div class="cards">
+<div class="card"><small>إجمالي المبيعات</small><strong id="totalSales">0 ج.م</strong></div>
+<div class="card"><small>إجمالي المشتريات</small><strong id="totalPurchases">0 ج.م</strong></div>
+<div class="card"><small>المصروفات</small><strong id="totalExpenses">0 ج.م</strong></div>
+<div class="card"><small>الربح التقريبي</small><strong id="totalProfit">0 ج.م</strong></div>
+<div class="card"><small>المبالغ المتبقية من العملاء</small><strong id="receivables">0 ج.م</strong></div>
+<div class="card"><small>عدد الأصناف</small><strong id="itemsCount">0</strong></div>
+</div>
+<div class="panel"><h2 style="margin-top:0">آخر الحركات</h2><div id="recent"></div></div>
+<div class="notice">بيانات البرنامج تُحفظ على نفس الموبايل والمتصفح. استخدم «تصدير نسخة احتياطية» بانتظام حتى لا تفقد بياناتك عند تغيير الجهاز أو المتصفح.</div>
+</section>
+
+<section id="sales" class="page">
+<h2>تسجيل عملية بيع</h2>
+<div class="panel">
+<label>التاريخ</label><input id="sDate" type="date">
+<label>رقم الفاتورة</label><input id="sInvoice" placeholder="مثال: 1001">
+<label>اسم العميل</label><input id="sCustomer" placeholder="اسم العميل">
+<label>المندوب</label><input id="sRep" placeholder="اسم المندوب">
+<label>الصنف</label><input id="sItem" placeholder="اسم الصنف">
+<div class="row"><div><label>الكمية</label><input id="sQty" type="number" min="0" step="any" placeholder="0"></div><div><label>سعر البيع</label><input id="sPrice" type="number" min="0" step="any" placeholder="0"></div></div>
+<div class="row"><div><label>تكلفة الوحدة</label><input id="sCost" type="number" min="0" step="any" placeholder="0"></div><div><label>المدفوع</label><input id="sPaid" type="number" min="0" step="any" placeholder="0"></div></div>
+<button class="primary" onclick="addSale()">حفظ البيع</button>
+</div><div class="panel"><h2 style="margin-top:0">سجل المبيعات</h2><div id="salesList"></div></div>
+</section>
+
+<section id="purchases" class="page">
+<h2>تسجيل مشتريات</h2><div class="panel">
+<label>التاريخ</label><input id="pDate" type="date">
+<label>اسم المورد</label><input id="pSupplier" placeholder="اسم المورد">
+<label>الصنف</label><input id="pItem" placeholder="اسم الصنف">
+<div class="row"><div><label>الكمية</label><input id="pQty" type="number" min="0" step="any"></div><div><label>سعر الشراء</label><input id="pPrice" type="number" min="0" step="any"></div></div>
+<label>المدفوع</label><input id="pPaid" type="number" min="0" step="any">
+<button class="primary" onclick="addPurchase()">حفظ المشتريات</button>
+</div><div class="panel"><h2 style="margin-top:0">سجل المشتريات</h2><div id="purchasesList"></div></div>
+</section>
+
+<section id="expenses" class="page">
+<h2>تسجيل مصروف</h2><div class="panel">
+<label>التاريخ</label><input id="eDate" type="date">
+<label>نوع المصروف</label><input id="eType" placeholder="إيجار، كهرباء، نقل...">
+<label>المبلغ</label><input id="eAmount" type="number" min="0" step="any">
+<label>ملاحظات</label><input id="eNote" placeholder="اختياري">
+<button class="primary" onclick="addExpense()">حفظ المصروف</button>
+</div><div class="panel"><h2 style="margin-top:0">سجل المصروفات</h2><div id="expensesList"></div></div>
+</section>
+
+<section id="stock" class="page">
+<h2>الأصناف والمخزون</h2><div class="panel">
+<label>اسم الصنف</label><input id="iName" placeholder="اسم الصنف">
+<div class="row"><div><label>رصيد أول المدة</label><input id="iOpening" type="number" min="0" step="any" value="0"></div><div><label>حد التنبيه</label><input id="iMin" type="number" min="0" step="any" value="0"></div></div>
+<div class="row"><div><label>سعر الشراء</label><input id="iCost" type="number" min="0" step="any" value="0"></div><div><label>سعر البيع</label><input id="iPrice" type="number" min="0" step="any" value="0"></div></div>
+<button class="primary" onclick="addItem()">إضافة الصنف</button>
+</div><div class="panel"><h2 style="margin-top:0">قائمة المخزون</h2><div id="stockList"></div></div>
+</section>
+
+<section id="more" class="page">
+<h2>العملاء والمندوبون والنسخ الاحتياطي</h2>
+<div class="panel">
+<label>إضافة عميل</label><input id="cName" placeholder="اسم العميل"><input id="cPhone" placeholder="رقم الهاتف" style="margin-top:8px">
+<button class="secondary" style="width:100%;margin-top:8px" onclick="addNamed('customers','cName','cPhone')">حفظ العميل</button>
+<div id="customersList"></div>
+<hr style="border:0;border-top:1px solid #eee;margin:16px 0">
+<label>إضافة مندوب</label><input id="rName" placeholder="اسم المندوب"><input id="rPhone" placeholder="رقم الهاتف" style="margin-top:8px">
+<button class="secondary" style="width:100%;margin-top:8px" onclick="addNamed('reps','rName','rPhone')">حفظ المندوب</button>
+<div id="repsList"></div>
+</div>
+<div class="panel">
+<h2 style="margin-top:0">حفظ ونقل البيانات</h2>
+<p class="muted">صدّر نسخة JSON للاحتفاظ بكل البيانات، أو صدّر سجل المبيعات كملف CSV يفتح في Excel.</p>
+<div class="actions"><button class="secondary" onclick="backup()">تصدير نسخة احتياطية</button><button class="secondary" onclick="exportSales()">تصدير المبيعات Excel/CSV</button></div>
+<label>استعادة نسخة احتياطية JSON</label><input id="restoreFile" type="file" accept=".json,application/json">
+<button class="secondary" style="width:100%;margin-top:8px" onclick="restore()">استعادة البيانات</button>
+</div>
+<div class="notice">مهم: هذا إصدار أولي يعمل من المتصفح، وليس تطبيقًا منشورًا على متجر التطبيقات. لا تمسح بيانات المتصفح قبل تصدير نسخة احتياطية.</div>
+</section>
+</main>
+<nav>
+<button class="active" onclick="showPage('dashboard',this)"><span>🏠</span>الرئيسية</button>
+<button onclick="showPage('sales',this)"><span>🧾</span>المبيعات</button>
+<button onclick="showPage('purchases',this)"><span>📦</span>المشتريات</button>
+<button onclick="showPage('expenses',this)"><span>💸</span>المصروفات</button>
+<button onclick="showPage('stock',this)"><span>🗃️</span>المخزون</button>
+<button onclick="showPage('more',this)"><span>☰</span>المزيد</button>
+</nav>
+<script>
+const KEY='alnoor_mobile_v1';
+let db=JSON.parse(localStorage.getItem(KEY)||'{"sales":[],"purchases":[],"expenses":[],"items":[],"customers":[],"reps":[]}');
+const $=id=>document.getElementById(id);
+const num=id=>Number($(id).value||0);
+const val=id=>$(id).value.trim();
+const today=()=>new Date().toISOString().slice(0,10);
+['sDate','pDate','eDate'].forEach(id=>$(id).value=today());
+function save(){localStorage.setItem(KEY,JSON.stringify(db));render()}
+function money(n){return (Number(n)||0).toLocaleString('ar-EG',{maximumFractionDigits:2})+' ج.م'}
+function showPage(id,btn){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(id).classList.add('active');document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));btn.classList.add('active');render()}
+function addSale(){
+ if(!val('sItem')||num('sQty')<=0){alert('اكتب الصنف والكمية بشكل صحيح');return}
+ let total=num('sQty')*num('sPrice'), cost=num('sQty')*num('sCost');
+ db.sales.unshift({date:val('sDate')||today(),invoice:val('sInvoice'),customer:val('sCustomer'),rep:val('sRep'),item:val('sItem'),qty:num('sQty'),price:num('sPrice'),costUnit:num('sCost'),total,cost,profit:total-cost,paid:num('sPaid'),due:total-num('sPaid')});
+ save();['sInvoice','sCustomer','sRep','sItem','sQty','sPrice','sCost','sPaid'].forEach(id=>$(id).value='');alert('تم حفظ عملية البيع');
+}
+function addPurchase(){
+ if(!val('pItem')||num('pQty')<=0){alert('اكتب الصنف والكمية بشكل صحيح');return}
+ let total=num('pQty')*num('pPrice');db.purchases.unshift({date:val('pDate')||today(),supplier:val('pSupplier'),item:val('pItem'),qty:num('pQty'),price:num('pPrice'),total,paid:num('pPaid'),due:total-num('pPaid')});
+ save();['pSupplier','pItem','pQty','pPrice','pPaid'].forEach(id=>$(id).value='');alert('تم حفظ المشتريات');
+}
+function addExpense(){if(!val('eType')||num('eAmount')<=0){alert('اكتب نوع المصروف والمبلغ');return}db.expenses.unshift({date:val('eDate')||today(),type:val('eType'),amount:num('eAmount'),note:val('eNote')});save();['eType','eAmount','eNote'].forEach(id=>$(id).value='');alert('تم حفظ المصروف')}
+function addItem(){if(!val('iName')){alert('اكتب اسم الصنف');return}db.items.push({name:val('iName'),opening:num('iOpening'),min:num('iMin'),cost:num('iCost'),price:num('iPrice')});save();$('iName').value='';alert('تم إضافة الصنف')}
+function addNamed(type,nameId,phoneId){if(!val(nameId)){alert('اكتب الاسم');return}db[type].push({name:val(nameId),phone:val(phoneId)});save();$(nameId).value='';$(phoneId).value=''}
+function sum(arr,k){return arr.reduce((a,x)=>a+(Number(x[k])||0),0)}
+function stockQty(item){return item.opening+sum(db.purchases.filter(x=>x.item===item.name),'qty')-sum(db.sales.filter(x=>x.item===item.name),'qty')}
+function render(){
+ $('totalSales').textContent=money(sum(db.sales,'total'));$('totalPurchases').textContent=money(sum(db.purchases,'total'));$('totalExpenses').textContent=money(sum(db.expenses,'amount'));
+ $('totalProfit').textContent=money(sum(db.sales,'profit')-sum(db.expenses,'amount'));$('receivables').textContent=money(sum(db.sales,'due'));$('itemsCount').textContent=db.items.length;
+ let recent=[...db.sales.slice(0,4).map(x=>({label:'بيع: '+x.item,amount:x.total,date:x.date})),...db.purchases.slice(0,3).map(x=>({label:'شراء: '+x.item,amount:x.total,date:x.date})),...db.expenses.slice(0,3).map(x=>({label:'مصروف: '+x.type,amount:x.amount,date:x.date}))].slice(0,7);
+ $('recent').innerHTML=recent.length?recent.map(x=>`<div class="list-item"><div>${esc(x.label)}<div class="muted">${esc(x.date)}</div></div><b>${money(x.amount)}</b></div>`).join(''):'<div class="empty">لسه مفيش حركات مسجلة</div>';
+ $('salesList').innerHTML=list(db.sales,x=>`<div><b>${esc(x.item)}</b><div class="muted">${esc(x.date)} • ${esc(x.customer||'بدون عميل')} • كمية ${x.qty}</div></div><div style="text-align:left"><b>${money(x.total)}</b><div class="muted">متبقي ${money(x.due)}</div></div>`);
+ $('purchasesList').innerHTML=list(db.purchases,x=>`<div><b>${esc(x.item)}</b><div class="muted">${esc(x.date)} • ${esc(x.supplier||'بدون مورد')} • كمية ${x.qty}</div></div><b>${money(x.total)}</b>`);
+ $('expensesList').innerHTML=list(db.expenses,x=>`<div><b>${esc(x.type)}</b><div class="muted">${esc(x.date)} • ${esc(x.note||'')}</div></div><b>${money(x.amount)}</b>`);
+ $('stockList').innerHTML=db.items.length?db.items.map((x,i)=>{let q=stockQty(x);return `<div class="list-item"><div><b>${esc(x.name)}</b><div class="muted">شراء ${money(x.cost)} • بيع ${money(x.price)}</div></div><div style="text-align:left"><b>${q}</b><div class="muted">${q<=x.min?'⚠️ وصل لحد الطلب':'متاح'}</div></div></div>`}).join(''):'<div class="empty">أضف الأصناف لعرض المخزون</div>';
+ $('customersList').innerHTML='<h3 style="font-size:14px">العملاء</h3>'+nameList(db.customers);
+ $('repsList').innerHTML='<h3 style="font-size:14px">المندوبون</h3>'+nameList(db.reps);
+}
+function list(arr,fn){return arr.length?arr.slice(0,80).map(x=>`<div class="list-item">${fn(x)}</div>`).join(''):'<div class="empty">لا توجد بيانات حتى الآن</div>'}
+function nameList(arr){return arr.length?arr.map(x=>`<div class="list-item"><span>${esc(x.name)}</span><span class="muted">${esc(x.phone||'')}</span></div>`).join(''):'<div class="muted">لا توجد أسماء مضافة</div>'}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function download(content,name,type){let a=document.createElement('a'),u=URL.createObjectURL(new Blob([content],{type}));a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
+function backup(){download(JSON.stringify(db,null,2),'نسخة-احتياطية-محل-النور.json','application/json')}
+function exportSales(){let rows=[['التاريخ','رقم الفاتورة','العميل','المندوب','الصنف','الكمية','سعر البيع','الإجمالي','التكلفة','الربح','المدفوع','المتبقي'],...db.sales.map(x=>[x.date,x.invoice,x.customer,x.rep,x.item,x.qty,x.price,x.total,x.cost,x.profit,x.paid,x.due])];let csv='\uFEFF'+rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\n');download(csv,'مبيعات-محل-النور.csv','text/csv;charset=utf-8')}
+function restore(){let f=$('restoreFile').files[0];if(!f){alert('اختار ملف النسخة الاحتياطية');return}let r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);if(!x.sales||!x.items)throw 0;db=x;save();alert('تمت استعادة البيانات')}catch(e){alert('الملف غير صالح')}};r.readAsText(f)}
+render();
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(()=>{}));
+}
+</script>
+</body></html>
